@@ -31,6 +31,7 @@ def zwshed_no_stats(np.ndarray[np.float32_t, ndim=4] affs, threshes):
             map = merge_no_stats(
             dims[0], dims[1], dims[2], result, threshes[i], 
             <uint64_t *>(seg.data))
+        segs.append(seg)
     return segs
 
 #-------------- c++ methods --------------------------------------------------------------
