@@ -48,7 +48,11 @@ template < typename T >
 using affinity_graph_ptr = std::shared_ptr<affinity_graph<T>>;
 
 template< typename ID, typename F >
-using region_graph = std::vector<std::tuple<F,ID,ID>>;
+using region_graph_record = std::tuple<F, ID, ID>;
+
+template< typename ID, typename F >
+using region_graph = std::vector<region_graph_record<ID, F>>;
 
 template< typename ID, typename F >
 using region_graph_ptr = std::shared_ptr<region_graph<ID,F>>;
+
