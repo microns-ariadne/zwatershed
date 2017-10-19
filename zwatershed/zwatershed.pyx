@@ -20,7 +20,7 @@ def zwshed_no_stats(np.ndarray[np.float32_t, ndim=4] affs, threshes):
     dims = affs.shape
     cdef ZWShedResult result = zwshed_initial_c(
         dims[0], dims[1], dims[2], <float *>affs.data)
-    cdef np.ndarray[np.uint64_t, ndim=3] seg
+    cdef np.ndarray[np.uint64_t, ndim=1] seg
     segs = []
 
     # get segs, stats
@@ -31,8 +31,8 @@ def zwshed_no_stats(np.ndarray[np.float32_t, ndim=4] affs, threshes):
             map = merge_no_stats(
             dims[0], dims[1], dims[2], result, threshes[i], 
             <uint64_t *>(seg.data))
-        seg = seg.reshape(dims[2], dims[1], dims[0]).transpose(2, 1, 0)
-        segs.append(seg)
+        segs.append(seg.reshape(dims[2], dims[1], dims[0]).transpose(2, 1, 0))
+        del seg
     return segs
 
 #-------------- c++ methods --------------------------------------------------------------
