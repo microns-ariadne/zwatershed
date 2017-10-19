@@ -92,9 +92,6 @@ void merge_no_stats(int dimX, int dimY, int dimZ,
     // The segmentation is in format X, Y, Z and the numpy memory
     // is in Z, Y, X
     //
-    for (size_t z = 0; z < dimZ; z++)
-	for (size_t y = 0; y < dimY; y++)
-	    for (size_t x = 0; x < dimX; x++)
-		seg_ptr[(z * dimY + y) * dimX + x] =
-		    result.seg_ref->data()[(x * dimY + y) * dimZ + z];
+    for (size_t i = 0; i < dimX * dimY * dimZ; i++)
+	seg_ptr[i] = result.seg_ref->data()[i];
 }

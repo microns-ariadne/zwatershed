@@ -26,11 +26,12 @@ def zwshed_no_stats(np.ndarray[np.float32_t, ndim=4] affs, threshes):
     # get segs, stats
     for i in range(len(threshes)):
         seg = \
-            np.zeros((dims[0], dims[1], dims[2]), np.uint64)
+            np.zeros((dims[0] * dims[1] * dims[2]), np.uint64)
         if(result.edge_1.size() > 0):
             map = merge_no_stats(
             dims[0], dims[1], dims[2], result, threshes[i], 
             <uint64_t *>(seg.data))
+        seg = seg.reshape(dims[2], dims[1], dims[0]).transpose(2, 1, 0)
         segs.append(seg)
     return segs
 
