@@ -42,10 +42,9 @@ ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, ui
     // read data
     ZWShedResult result;
     affinity_graph_ptr<uint8_t> aff(new affinity_graph<uint8_t>
-                              (boost::extents[dimX][dimY][dimZ][3],
-                               boost::fortran_storage_order()));
-    for(int i=0;i<dimX*dimY*dimZ*3;i++)
-        aff->data()[i] = affs[i];
+                              (affs,
+			       boost::extents[dimX][dimY][dimZ][3],
+                               boost::c_storage_order()));
     std::tie(result.seg_ref , result.counts_ref) = 
         watershed<seg_t>(aff, LOW, HIGH);
 

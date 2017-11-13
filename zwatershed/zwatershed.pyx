@@ -20,7 +20,7 @@ def zwatershed(np.ndarray[np.uint8_t, ndim=4] affs, threshes,
     :returns: a list of segmentations as UINT32 numpy arrays
     '''
     threshes.sort()
-    affs = np.asfortranarray(np.transpose(affs, (1, 2, 3, 0)))
+    affs = np.ascontiguousarray(np.transpose(affs, (1, 2, 3, 0)))
     dims = affs.shape
     cdef ZWShedResult result = zwshed_initial_c(
         dims[0], dims[1], dims[2], <uint8_t *>affs.data, LOW, HIGH)

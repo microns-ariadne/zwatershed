@@ -39,7 +39,7 @@ template < typename T >
 using volume = boost::multi_array<T,3>;
 
 template < typename T >
-using affinity_graph = boost::multi_array<T,4>;
+using affinity_graph = boost::multi_array_ref<T,4>;
 
 template < typename T >
 using volume_ptr = std::shared_ptr<volume<T>>;
