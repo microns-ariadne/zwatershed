@@ -19,4 +19,8 @@ public:
         if ( v < LOW_THRESH ) return 0;
         return v * v * coef_;
     }
+    std::size_t operator()(unsigned char v) const
+    {
+        return (*this)((float)(v) / 255.0f);
+    }
 };

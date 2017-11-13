@@ -10,11 +10,6 @@
 #include "zwatershed_util/limit_functions.hpp"
 #include "zwatershed_util/types.hpp"
 #include "zwatershed_util/main_helper.hpp"
-// arb funcs
-#include "zwatershed_util/region_graph_arb.hpp"
-#include "zwatershed_util/basic_watershed_arb.hpp"
-#include "zwatershed_util/main_helper_arb.hpp"
-
 
 #include <memory>
 #include <type_traits>
@@ -37,24 +32,22 @@
 #include <string>
 #include <boost/make_shared.hpp>
 using namespace std;
-// these values based on 5% at iter = 10000
-double LOW=  .0001;
-double HIGH= .9999;
 bool RECREATE_RG = true;
+using seg_t = uint64_t;
 
-ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, float* affs)
+ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, uint8_t* affs, uint8_t LOW, uint8_t HIGH)
 {
     std::cout << "calculating basic watershed..." << std::endl;
 
     // read data
     ZWShedResult result;
-    affinity_graph_ptr<float> aff(new affinity_graph<float>
+    affinity_graph_ptr<uint8_t> aff(new affinity_graph<uint8_t>
                               (boost::extents[dimX][dimY][dimZ][3],
                                boost::fortran_storage_order()));
     for(int i=0;i<dimX*dimY*dimZ*3;i++)
         aff->data()[i] = affs[i];
     std::tie(result.seg_ref , result.counts_ref) = 
-        watershed<uint64_t>(aff, LOW, HIGH);
+        watershed<seg_t>(aff, LOW, HIGH);
 
 
     // calculate region graph
@@ -73,12 +66,12 @@ ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, fl
 
 void merge_no_stats(int dimX, int dimY, int dimZ, 
                     ZWShedResult &result, int thresh,
-		    uint64_t *seg_ptr){
+		    seg_t *seg_ptr){
     std::cout << "evaluating..." << std::endl;
 
     // read data
     std::vector<std::size_t> &counts = result.counts_ref;
-    region_graph_ptr<uint64_t,float> rg( new region_graph<uint64_t,float> );
+    region_graph_ptr<seg_t, uint8_t> rg( new region_graph<seg_t, uint8_t> );
     for(int i=0;i<result.weight.size();i++)
 	(*rg).emplace_back(result.weight[i],result.edge_1[i],result.edge_2[i]);
 

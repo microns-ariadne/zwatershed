@@ -12,12 +12,12 @@
 struct ZWShedResult {
     std::vector<uint64_t> edge_1;
     std::vector<uint64_t> edge_2;
-    std::vector<float> weight;
+    std::vector<uint8_t> weight;
     volume_ptr<uint64_t> seg_ref;
     std::vector<std::size_t> counts_ref;
 };
 
-ZWShedResult zwshed_initial_c(const int dx, const int dy, const int dz, float* affs);
+ZWShedResult zwshed_initial_c(const int dx, const int dy, const int dz, uint8_t* affs, uint8_t LOW, uint8_t HIGH);
 
 void merge_no_stats(
     int dimX, int dimY, int dimZ, 
