@@ -35,16 +35,38 @@ using namespace std;
 bool RECREATE_RG = true;
 using seg_t = uint64_t;
 
+/*********************************
+ *
+ * zwshed_initial_c - run the watershed and make the region graph
+ *
+ * affs - an array laid out as Z varying first, then Y, then X and on the
+ *        outside, the channel # (0 for X, 1 for Y, 2 for Z).
+ * dimX - the dimensions along the X axis
+ * dimY - the dimensions along the Y axis
+ * dimZ - the dimensions along the Z axis
+ * LOW - the value indicating "definitely not connected"
+ * HIGH - the value indicating "definitely connected"
+ *********************************/
 ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, uint8_t* affs, uint8_t LOW, uint8_t HIGH)
 {
+    /*
+     * Some ideas taken from:
+     * https://stackoverflow.com/questions/2168082/how-to-rewrite-array-from-row-order-to-column-order
+     */
+    typedef boost::general_storage_order<4> Storage;
     std::cout << "calculating basic watershed..." << std::endl;
 
-    // read data
     ZWShedResult result;
+    /*
+     * This transposes the array so that the channel is the last dimension
+     * instead of the first.
+     */
+    int ordering[] = {2, 1, 0, 3};
+    bool ascending[] = {true, true, true, true};
     affinity_graph_ptr<uint8_t> aff(new affinity_graph<uint8_t>
                               (affs,
 			       boost::extents[dimX][dimY][dimZ][3],
-                               boost::c_storage_order()));
+                               Storage(ordering, ascending)));
     std::tie(result.seg_ref , result.counts_ref) = 
         watershed<seg_t>(aff, LOW, HIGH);
 

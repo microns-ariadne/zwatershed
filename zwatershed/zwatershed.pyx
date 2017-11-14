@@ -20,26 +20,31 @@ def zwatershed(np.ndarray[np.uint8_t, ndim=4] affs, threshes,
     :returns: a list of segmentations as UINT32 numpy arrays
     '''
     threshes.sort()
-    affs = np.ascontiguousarray(np.transpose(affs, (1, 2, 3, 0)))
+    affs = np.ascontiguousarray(affs)
     dims = affs.shape
-    cdef ZWShedResult result = zwshed_initial_c(
-        dims[0], dims[1], dims[2], <uint8_t *>affs.data, LOW, HIGH)
+    cdef ZWShedResult result
     cdef np.ndarray[np.uint64_t, ndim=1] seg
     cdef:
         np.ndarray[np.uint64_t] edge_1
         np.ndarray[np.uint64_t] edge_2
         np.ndarray[np.uint8_t] weight
+    cdef int thresh
     segs = []
+    with nogil:
+        result = zwshed_initial_c(
+            dims[1], dims[2], dims[3], <uint8_t *>affs.data, LOW, HIGH)
 
     # get segs, stats
     for i in range(len(threshes)):
         seg = \
-            np.zeros((dims[0] * dims[1] * dims[2]), np.uint64)
-        if(result.edge_1.size() > 0):
-            map = merge_no_stats(
-            dims[0], dims[1], dims[2], result, threshes[i], 
-            <uint64_t *>(seg.data))
-        segs.append(seg.reshape(dims[2], dims[1], dims[0]).transpose(2, 1, 0))
+            np.zeros((dims[1] * dims[2] * dims[3]), np.uint64)
+        if result.edge_1.size() > 0:
+            thresh = threshes[i]
+            with nogil:
+                merge_no_stats(
+                    dims[1], dims[2], dims[3], result, thresh, 
+                    <uint64_t *>(seg.data))
+        segs.append(seg.reshape(dims[3], dims[2], dims[1]).transpose(2, 1, 0))
         del seg
     if return_rg:
         edge_1 = np.zeros(result.edge_1.size(), np.uint64)
