@@ -73,14 +73,8 @@ ZWShedResult zwshed_initial_c(const int dimX, const int dimY, const int dimZ, ui
 
     // calculate region graph
     std::cout << "calculating rgn graph..." << std::endl;
-    auto rg = get_region_graph(aff, result.seg_ref , result.counts_ref.size()-1);
+    result.rg = get_region_graph(aff, result.seg_ref , result.counts_ref.size()-1);
 
-    // save and return
-    for ( const auto& e: *rg ){
-        result.edge_1.push_back(std::get<1>(e));
-        result.edge_2.push_back(std::get<2>(e));
-        result.weight.push_back(std::get<0>(e));
-    }
     return result;
  }
 
@@ -92,15 +86,12 @@ void merge_no_stats(int dimX, int dimY, int dimZ,
 
     // read data
     std::vector<std::size_t> &counts = result.counts_ref;
-    region_graph_ptr<seg_t, uint8_t> rg( new region_graph<seg_t, uint8_t> );
-    for(int i=0;i<result.weight.size();i++)
-	(*rg).emplace_back(result.weight[i],result.edge_1[i],result.edge_2[i]);
 
     // merge
     std::cout << "thresh: " << thresh << "\n";
     double t = (double) thresh;
 	merge_segments_with_function(
-	    result.seg_ref, rg, counts, square(t), 10,RECREATE_RG);
+	    result.seg_ref, result.rg, counts, square(t), 10,RECREATE_RG);
 
     //
     // The segmentation is in format X, Y, Z and the numpy memory

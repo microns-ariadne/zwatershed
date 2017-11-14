@@ -35,11 +35,10 @@ def zwatershed(np.ndarray[np.uint8_t, ndim=4] affs, threshes,
             dims[1], dims[2], dims[3], <uint8_t *>affs.data, LOW, HIGH)
 
     # get segs, stats
-    for i in range(len(threshes)):
+    for thresh in threshes:
         seg = \
             np.zeros((dims[1] * dims[2] * dims[3]), np.uint64)
-        if result.edge_1.size() > 0:
-            thresh = threshes[i]
+        if result.rg_size() > 0:
             with nogil:
                 merge_no_stats(
                     dims[1], dims[2], dims[3], result, thresh, 
@@ -47,24 +46,23 @@ def zwatershed(np.ndarray[np.uint8_t, ndim=4] affs, threshes,
         segs.append(seg.reshape(dims[3], dims[2], dims[1]).transpose(2, 1, 0))
         del seg
     if return_rg:
-        edge_1 = np.zeros(result.edge_1.size(), np.uint64)
-        edge_2 = np.zeros(result.edge_2.size(), np.uint64)
-        weight = np.zeros(result.weight.size(), np.uint8)
-        copy(result.edge_1.begin(), result.edge_1.end(),
-             <uint64_t *>edge_1.data)
-        copy(result.edge_2.begin(), result.edge_2.end(),
-             <uint64_t *>edge_2.data)
-        copy(result.weight.begin(), result.weight.end(), 
-             <uint8_t *>weight.data)
+        edge_1 = np.zeros(result.rg_size(), np.uint64)
+        edge_2 = np.zeros(result.rg_size(), np.uint64)
+        weight = np.zeros(result.rg_size(), np.uint8)
+        for i in range(result.rg_size()):
+            weight[i] = result.getWeight(i)
+            edge_1[i] = result.getEdge1(i)
+            edge_2[i] = result.getEdge2(i)
         return segs, (edge_1, edge_2, weight)
     return segs
 
 #-------------- c++ methods --------------------------------------------------------------
 cdef extern from "zwatershed.h" nogil:
     struct ZWShedResult:
-        vector[uint64_t] edge_1
-        vector[uint64_t] edge_2
-        vector[uint8_t] weight
+        uint8_t getWeight(size_t idx);
+        uint64_t getEdge1(size_t idx);
+        uint64_t getEdge2(size_t idx);
+        size_t rg_size();
         
     ZWShedResult zwshed_initial_c(
         int dimX, int dimY, int dimZ, 
